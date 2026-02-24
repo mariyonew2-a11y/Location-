@@ -4,31 +4,33 @@
     <title>PARDHAN Control Center</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background: #0b0e14; color: #adbac7; font-family: sans-serif; padding: 25px; }
+        body { background: #0b0e14; color: #adbac7; font-family: 'Segoe UI', sans-serif; padding: 25px; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; padding-bottom: 15px; margin-bottom: 25px; }
-        table { width: 100%; border-collapse: collapse; background: #161b22; border-radius: 10px; overflow: hidden; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #30363d; }
+        table { width: 100%; border-collapse: collapse; background: #161b22; border-radius: 12px; overflow: hidden; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #30363d; font-size: 14px; }
         th { background: #21262d; color: #58a6ff; }
-        .map-btn { background: #238636; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 13px; font-weight: bold; }
+        .map-btn { background: #238636; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1 style="color: #f85149;">🚀 PARDHAN LOGS [v5.0 PRO]</h1>
-        <button onclick="location.reload()" style="padding: 10px; border-radius: 5px; cursor: pointer;">Refresh Data</button>
+        <h1 style="color: #f85149; letter-spacing: -1px;">🚀 PARDHAN LOGS [v6.0 PRO]</h1>
+        <button onclick="loadData()" style="padding: 10px 20px; cursor: pointer; border-radius: 6px; border: none; background: #21262d; color: white;">Refresh</button>
     </div>
 
     <table>
         <thead>
             <tr>
                 <th>Date & Time</th>
-                <th>Location (GPS)</th>
-                <th>Metadata (Batt/Tag)</th>
+                <th>Location (Lat, Long)</th>
+                <th>Battery & Tag</th>
                 <th>Device Platform</th>
                 <th>Action</th>
             </tr>
         </thead>
-        <tbody id="data"></tbody>
+        <tbody id="table-body">
+            <tr><td colspan="5">Loading data...</td></tr>
+        </tbody>
     </table>
 
 <script>
@@ -36,22 +38,25 @@
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImplZHBremxveGVwenNrcHdvbXFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MTc2NjksImV4cCI6MjA4NzQ5MzY2OX0.NYGrW558hlusgVxHvWrN89hb1mlYyU71FL1g2xgN3eY';
     const supabase = window.supabase.createClient(SB_URL, SB_KEY);
 
-    async function loadLogs() {
-        const { data } = await supabase.from('location_logs').select('*').order('created_at', { ascending: false });
-        const list = document.getElementById('data');
-        list.innerHTML = "";
+    async function loadData() {
+        const { data, error } = await supabase.from('location_logs').select('*').order('created_at', { ascending: false });
+        const body = document.getElementById('table-body');
+        
+        if (error) { body.innerHTML = `<tr><td colspan="5">Error: ${error.message}</td></tr>`; return; }
+        
+        body.innerHTML = "";
         data.forEach(log => {
-            list.innerHTML += `
+            body.innerHTML += `
                 <tr>
                     <td>${new Date(log.created_at).toLocaleString()}</td>
-                    <td>${log.latitude.toFixed(5)}, ${log.longitude.toFixed(5)}</td>
+                    <td><b>${log.latitude.toFixed(5)}, ${log.longitude.toFixed(5)}</b></td>
                     <td>${log.ip}</td>
                     <td>${log.os_info}</td>
-                    <td><a class="map-btn" href="https://www.google.com/maps?q=${log.latitude},${log.longitude}" target="_blank">View on Map</a></td>
+                    <td><a class="map-btn" href="https://www.google.com/maps?q=$${log.latitude},${log.longitude}" target="_blank">📍 TRACE</a></td>
                 </tr>`;
         });
     }
-    window.onload = loadLogs;
+    window.onload = loadData;
 </script>
 </body>
 </html>
